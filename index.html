@@ -49,7 +49,7 @@ label{margin-left:4px;color:#aeb9b0;font-size:14px}
 <script>
 const S='6e400001-b5a3-f393-e0a9-e50e24dcca9e',RX='6e400002-b5a3-f393-e0a9-e50e24dcca9e',TX='6e400003-b5a3-f393-e0a9-e50e24dcca9e',LED='6e400004-b5a3-f393-e0a9-e50e24dcca9e';
 const MOTION=new Uint8Array([32,16,0,52,0,52,0,3]), LED_ON=new Uint8Array([1]), LED_OFF=new Uint8Array([0]);
-let tx,rx,led,buf=new Uint8Array(),device;
+let tx,rx,led,buf=new Uint8Array(),device, reconnectTimer=null, connecting=false, reconnectAttempts=0;
 let vals=[0,0,0,0,0,0],samples=0,lastT=0;
 let rot={x:0,y:0,z:0};
 const st=t=>document.querySelector('#status').textContent=t;
@@ -101,26 +101,64 @@ async function setLed(on){
   try{await led.writeValue(on?LED_ON:LED_OFF);document.querySelector('#ledDot').classList.toggle('on',on)}catch(e){st('LED: '+e.message)}
 }
 
+async function setupConnection(){
+  if(!device||!device.gatt) throw Error('Triki не выбран');
+  if(!device.gatt.connected){
+    st('Переподключение к Triki…');
+    await device.gatt.connect();
+  }
+  const s=await device.gatt.getPrimaryService(S);
+  rx=await s.getCharacteristic(RX);
+  tx=await s.getCharacteristic(TX);
+  led=await s.getCharacteristic(LED);
+  try{await tx.startNotifications()}catch(e){}
+  tx.addEventListener('characteristicvaluechanged',e=>parse(e.target.value));
+  buf=new Uint8Array();
+  lastT=0;
+  await rx.writeValue(MOTION);
+  document.querySelector('#led').disabled=false;
+  reconnectAttempts=0;
+  st('Подключено: '+(device.name||'Triki'));
+}
+
+function scheduleReconnect(){
+  if(!device||reconnectTimer||connecting)return;
+  const delay=Math.min(1000*Math.pow(1,reconnectAttempts),5000);
+  reconnectTimer=setTimeout(async()=>{
+    reconnectTimer=null;
+    if(!device)return;
+    try{
+      connecting=true;
+      await setupConnection();
+    }catch(e){
+      reconnectAttempts++;
+      document.querySelector('#led').disabled=true;
+      st('Triki отключён — переподключение…');
+      scheduleReconnect();
+    }finally{connecting=false}
+  },delay);
+}
+
 async function connect(){
   try{
     if(!navigator.bluetooth) throw Error('Web Bluetooth недоступен. Открой сайт через HTTPS в Chrome/Edge.');
+    if(connecting)return;
+    connecting=true;
     st('Выбор Triki…');
     const opts=document.querySelector('#all').checked
       ? {acceptAllDevices:true,optionalServices:[S]}
       : {filters:[{services:[S]}],optionalServices:[S]};
     device=await navigator.bluetooth.requestDevice(opts);
-    device.addEventListener('gattserverdisconnected',()=>{document.querySelector('#led').disabled=true;st('Triki отключён')});
-    const g=await device.gatt.connect();
-    const s=await g.getPrimaryService(S);
-    rx=await s.getCharacteristic(RX);
-    tx=await s.getCharacteristic(TX);
-    led=await s.getCharacteristic(LED);
-    await tx.startNotifications();
-    tx.addEventListener('characteristicvaluechanged',e=>parse(e.target.value));
-    await rx.writeValue(MOTION);
-    document.querySelector('#led').disabled=false;
-    st('Подключено: '+(device.name||'Triki'));
-  }catch(e){st('Ошибка: '+e.message)}
+    device.addEventListener('gattserverdisconnected',()=>{
+      document.querySelector('#led').disabled=true;
+      if(!connecting) scheduleReconnect();
+      st('Triki отключён — переподключение…');
+    });
+    await setupConnection();
+  }catch(e){
+    document.querySelector('#led').disabled=true;
+    st('Ошибка: '+e.message);
+  }finally{connecting=false}
 }
 
 document.querySelector('#connect').onclick=connect;
