@@ -18,12 +18,12 @@ label{margin-left:4px;color:#aeb9b0;font-size:14px}
 .stage{height:390px;border-radius:20px;background:radial-gradient(circle,#17231b 0,#0a0e0c 65%);display:grid;place-items:center;overflow:hidden;position:relative}
 .stage:after{content:"";position:absolute;width:300px;height:70px;border-radius:50%;background:#0008;filter:blur(18px);bottom:45px}
 .scene{width:280px;height:280px;perspective:800px;display:grid;place-items:center;position:relative;z-index:1}
-.triki{width:220px;height:220px;position:relative;transform-style:preserve-3d;transition:transform .035s linear}
+.triki{width:238px;height:238px;position:relative;transform-style:preserve-3d;transition:transform .035s linear}
 .cap{position:absolute;inset:0;border-radius:50%;transform-style:preserve-3d}.triki:before{content:"";position:absolute;inset:7px;border-radius:50%;background:linear-gradient(90deg,#151816,#626862 48%,#202420);transform:translateZ(-11px);box-shadow:0 8px 16px #000b}.triki:after{content:"";position:absolute;left:8px;right:8px;top:8px;bottom:8px;border-radius:50%;border:8px solid #252a26;transform:translateZ(-6px);box-shadow:inset 0 0 10px #000}
 .rim{position:absolute;inset:0;border-radius:50%;background:repeating-conic-gradient(from 0deg,#3a3f3b 0 6deg,#171a18 6deg 12deg);box-shadow:0 7px 15px #000a,0 0 0 4px #090b0a}
-.green{position:absolute;inset:7px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#83f19b33 0 5%,#21b94d22 22%,#0b2012 72%);border:2px solid #5eea7a66;box-shadow:inset 0 0 25px #2bce5b33}
-.face{position:absolute;inset:13px;border-radius:50%;background:linear-gradient(145deg,#d5d8d5,#7b817d 44%,#454945 72%,#b7bbb7);box-shadow:inset 0 2px 3px #fff9,inset 0 -7px 14px #0007,0 2px 3px #000b;display:grid;place-items:center}
-.logo{font-weight:1000;letter-spacing:-2px;font-size:31px;color:#e8ebe8;text-shadow:0 2px 2px #0008;transform:translateZ(10px)}
+.green{position:absolute;inset:9px;border-radius:40% 40% 46% 46%/44% 44% 48% 48%;background:radial-gradient(circle at 35% 30%,#83f19b33 0 5%,#21b94d22 22%,#0b2012 72%);border:2px solid #5eea7a66;box-shadow:inset 0 0 25px #2bce5b33}
+.face{position:absolute;inset:17px;border-radius:38% 38% 44% 44%/42% 42% 46% 46%;background:linear-gradient(145deg,#d5d8d5,#7b817d 44%,#454945 72%,#b7bbb7);box-shadow:inset 0 2px 3px #fff9,inset 0 -7px 14px #0007,0 2px 3px #000b;display:grid;place-items:center}
+.logo{font-weight:1000;letter-spacing:-2px;font-size:34px;color:#e8ebe8;text-shadow:0 2px 2px #0008;transform:translateZ(10px)}
 .logo b{color:#21a94a}.ledDot{position:absolute;top:43px;left:50%;width:16px;height:16px;margin-left:-8px;border-radius:50%;background:#26302a;box-shadow:inset 0 2px 3px #0008;transition:.1s}.ledDot.on{background:#baffc5;box-shadow:0 0 8px #22ff55,0 0 28px #20db55}
 .centerMark{position:absolute;width:7px;height:7px;border-radius:50%;background:#262a27;box-shadow:0 1px 2px #fff8}
 .info{position:absolute;left:16px;bottom:14px;color:#78857b;font:12px ui-monospace,monospace}
@@ -52,6 +52,8 @@ const MOTION=new Uint8Array([32,16,0,52,0,52,0,3]), LED_ON=new Uint8Array([1]), 
 let tx,rx,led,buf=new Uint8Array(),device, reconnectTimer=null, connecting=false, reconnectAttempts=0;
 let vals=[0,0,0,0,0,0],samples=0,lastT=0;
 let rot={x:0,y:0,z:0};
+const RESTING_X=70; // Triki лежит: его плоскость почти горизонтальна относительно сцены.
+let yaw=0;
 const st=t=>document.querySelector('#status').textContent=t;
 const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
 
@@ -79,19 +81,17 @@ function updateMotion(){
   lastT=now;
   // Gyroscope: integrate all three axes so physical rotation is visible.
   // The scale is intentionally conservative for the small Triki sensor.
-  rot.x += vals[0]*dt*0.00045;
-  rot.y += vals[1]*dt*0.00045;
-  rot.z += vals[2]*dt*0.00045;
+  yaw += vals[2]*dt*0.00045;
 
   // Accelerometer slowly corrects pitch/roll drift when the device is tilted.
   const ax=vals[3], ay=vals[4], az=vals[5];
   const roll=Math.atan2(ay,Math.sqrt(ax*ax+az*az))*180/Math.PI;
   const pitch=Math.atan2(-ax,Math.sqrt(ay*ay+az*az))*180/Math.PI;
-  rot.x=rot.x*.94+pitch*.06;
-  rot.y=rot.y*.94+roll*.06;
-
-  // Keep values sane during long sessions.
-  rot.x=clamp(rot.x,-105,105);rot.y=clamp(rot.y,-105,105);
+  // Абсолютный наклон берём из гравитации, поэтому положение не зависит от того,
+  // сколько времени Triki вращали: плоско = лежит, около 90° = стоит на ребре.
+  rot.x = RESTING_X - pitch;
+  rot.y = roll;
+  rot.z = yaw;
   document.querySelector('#triki').style.transform='rotateX('+rot.x.toFixed(2)+'deg) rotateY('+rot.y.toFixed(2)+'deg) rotateZ('+rot.z.toFixed(2)+'deg)';
   document.querySelector('#info').textContent='gyro: '+vals.slice(0,3).join(' ')+' · accel: '+vals.slice(3).join(' ')+' · packets: '+samples;
 }
@@ -170,7 +170,7 @@ b.onpointerleave=()=>setLed(false);
 drawInitial();
 
 function drawInitial(){
-  document.querySelector('#triki').style.transform='rotateX(58deg) rotateY(-18deg) rotateZ(0deg)';
+  document.querySelector('#triki').style.transform='rotateX('+RESTING_X+'deg) rotateY(0deg) rotateZ(0deg)';
 }
 </script>
 </main>
