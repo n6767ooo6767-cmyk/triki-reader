@@ -3,176 +3,209 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>TRIKI Reader</title>
+<meta name="theme-color" content="#080b09">
+<title>TRIKI Control</title>
 <style>
+:root{color-scheme:dark;--bg:#070908;--panel:#101512;--line:#263129;--text:#f2f6f3;--muted:#8d9b91;--green:#28d65d;--green2:#0fa842;--red:#ff5c5c}
 *{box-sizing:border-box}
-body{margin:0;min-height:100vh;background:radial-gradient(circle at 50% 0%,#18251d 0,#090c0b 42%,#050606 100%);color:#f4f7f4;font-family:system-ui,-apple-system,Segoe UI,sans-serif;display:grid;place-items:center}
-.card{width:min(900px,94vw);padding:24px;border:1px solid #28312b;border-radius:24px;background:rgba(13,17,15,.92);box-shadow:0 24px 80px #0008}
-h1{margin:0 0 4px;font-size:30px}p{margin:0 0 16px;color:#9da99f}
-.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-button{padding:13px 18px;border:0;border-radius:12px;font-weight:800;cursor:pointer;font-size:15px}
-#connect{background:#f4f6f4;color:#101410}
-#led{background:#11a64a;color:#fff}#led:disabled{opacity:.35;cursor:not-allowed}
-label{margin-left:4px;color:#aeb9b0;font-size:14px}
-.status{margin:14px 0;padding:11px 13px;background:#090d0b;border:1px solid #222b25;border-radius:12px;color:#cbd5cd}
-.stage{height:390px;border-radius:20px;background:radial-gradient(circle,#17231b 0,#0a0e0c 65%);display:grid;place-items:center;overflow:hidden;position:relative}
-.stage:after{content:"";position:absolute;width:300px;height:70px;border-radius:50%;background:#0008;filter:blur(18px);bottom:45px}
-.scene{width:280px;height:280px;perspective:800px;display:grid;place-items:center;position:relative;z-index:1}
-.triki{width:238px;height:238px;position:relative;transform-style:preserve-3d;transition:transform .035s linear}
-.cap{position:absolute;inset:0;border-radius:50%;transform-style:preserve-3d}.triki:before{content:"";position:absolute;inset:7px;border-radius:50%;background:linear-gradient(90deg,#151816,#626862 48%,#202420);transform:translateZ(-11px);box-shadow:0 8px 16px #000b}.triki:after{content:"";position:absolute;left:8px;right:8px;top:8px;bottom:8px;border-radius:50%;border:8px solid #252a26;transform:translateZ(-6px);box-shadow:inset 0 0 10px #000}
-.rim{position:absolute;inset:0;border-radius:50%;background:repeating-conic-gradient(from 0deg,#3a3f3b 0 6deg,#171a18 6deg 12deg);box-shadow:0 7px 15px #000a,0 0 0 4px #090b0a}
-.green{position:absolute;inset:9px;border-radius:40% 40% 46% 46%/44% 44% 48% 48%;background:radial-gradient(circle at 35% 30%,#83f19b33 0 5%,#21b94d22 22%,#0b2012 72%);border:2px solid #5eea7a66;box-shadow:inset 0 0 25px #2bce5b33}
-.face{position:absolute;inset:17px;border-radius:38% 38% 44% 44%/42% 42% 46% 46%;background:linear-gradient(145deg,#d5d8d5,#7b817d 44%,#454945 72%,#b7bbb7);box-shadow:inset 0 2px 3px #fff9,inset 0 -7px 14px #0007,0 2px 3px #000b;display:grid;place-items:center}
-.logo{font-weight:1000;letter-spacing:-2px;font-size:34px;color:#e8ebe8;text-shadow:0 2px 2px #0008;transform:translateZ(10px)}
-.logo b{color:#21a94a}.ledDot{position:absolute;top:43px;left:50%;width:16px;height:16px;margin-left:-8px;border-radius:50%;background:#26302a;box-shadow:inset 0 2px 3px #0008;transition:.1s}.ledDot.on{background:#baffc5;box-shadow:0 0 8px #22ff55,0 0 28px #20db55}
-.centerMark{position:absolute;width:7px;height:7px;border-radius:50%;background:#262a27;box-shadow:0 1px 2px #fff8}
-.info{position:absolute;left:16px;bottom:14px;color:#78857b;font:12px ui-monospace,monospace}
+body{margin:0;min-height:100vh;background:radial-gradient(circle at 50% -10%,#173520 0,#0b100d 34%,var(--bg) 72%);color:var(--text);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button{font:inherit}
+.app{width:min(1120px,94vw);margin:0 auto;padding:28px 0 42px}
+header{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;margin-bottom:18px}
+h1{margin:0;font-size:clamp(30px,5vw,46px);letter-spacing:-1.5px}
+.subtitle{margin:6px 0 0;color:var(--muted)}
+.badge{display:flex;align-items:center;gap:9px;border:1px solid var(--line);background:#0d120f;border-radius:999px;padding:9px 13px;color:#b7c4ba;font-size:13px;white-space:nowrap}
+.dot{width:9px;height:9px;border-radius:50%;background:#69756d}.dot.on{background:var(--green);box-shadow:0 0 14px #28d65d}
+.grid{display:grid;grid-template-columns:1.35fr .65fr;gap:16px}
+.panel{background:linear-gradient(180deg,#111713ee,#0b100de8);border:1px solid var(--line);border-radius:22px;box-shadow:0 22px 70px #0007}
+.main{padding:18px}
+.toolbar{display:flex;flex-wrap:wrap;gap:9px;align-items:center;margin-bottom:14px}
+button{border:0;border-radius:12px;padding:12px 16px;font-weight:800;cursor:pointer;transition:.16s transform,.16s opacity}
+button:active{transform:scale(.97)}
+.primary{background:#f1f5f2;color:#0a0e0b}
+.secondary{background:#1b2820;color:#dfe9e2;border:1px solid #304238}
+.led{background:var(--green2);color:#fff;min-width:120px}
+.led.off{background:#1a241e}
+button:disabled{opacity:.4;cursor:not-allowed}
+.status{flex:1;min-width:210px;border:1px solid var(--line);background:#090d0b;border-radius:12px;padding:11px 13px;color:#bac6bd}
+.stage{height:480px;position:relative;overflow:hidden;border-radius:18px;border:1px solid #202b24;background:radial-gradient(circle at 50% 38%,#1a2a1e 0,#0c120e 45%,#070908 78%);display:grid;place-items:center}
+.stage:before{content:"";position:absolute;width:360px;height:80px;border-radius:50%;bottom:52px;background:#000b;filter:blur(22px)}
+.scene{width:300px;height:300px;perspective:850px;display:grid;place-items:center;z-index:1}
+.triki{width:245px;height:245px;position:relative;transform-style:preserve-3d;transition:transform .04s linear}
+.rim,.green,.face{position:absolute;inset:0;border-radius:50%;transform-style:preserve-3d}
+.rim{background:repeating-conic-gradient(#444b46 0 6deg,#161b18 6deg 12deg);box-shadow:0 8px 20px #000c,0 0 0 5px #090b0a}
+.green{inset:10px;background:radial-gradient(circle at 35% 28%,#8affaa33 0 5%,#21b94d1c 25%,#09150d 72%);border:2px solid #5eea7a55;box-shadow:inset 0 0 30px #2bce5b33}
+.face{inset:18px;background:linear-gradient(145deg,#e1e4e1,#7d847f 45%,#404641 74%,#b9bdb9);box-shadow:inset 0 2px 4px #fff9,inset 0 -8px 15px #0008,0 3px 5px #000b;display:grid;place-items:center}
+.logo{font-weight:1000;letter-spacing:-3px;font-size:37px;text-shadow:0 2px 3px #0008;transform:translateZ(12px)}.logo b{color:#20ae4b}
+.ledDot{position:absolute;top:43px;left:50%;width:17px;height:17px;margin-left:-8.5px;border-radius:50%;background:#252d28;box-shadow:inset 0 2px 3px #0008;transition:.12s}.ledDot.on{background:#c5ffd0;box-shadow:0 0 9px #22ff55,0 0 30px #20db55}
+.info{position:absolute;left:14px;bottom:12px;color:#718077;font:12px ui-monospace,SFMono-Regular,monospace}
+.side{padding:18px}
+.side h2{margin:0 0 12px;font-size:17px}
+.sensors{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.sensor{padding:12px;border:1px solid var(--line);border-radius:14px;background:#0a0f0c}
+.sensor span{display:block;color:var(--muted);font-size:12px;margin-bottom:4px}.sensor strong{font:700 17px ui-monospace,monospace}
+.help{margin-top:14px;padding:13px;border-radius:14px;background:#0b110d;border:1px solid var(--line);color:#aab6ad;font-size:13px;line-height:1.45}
+.help b{color:#e1e9e3}
+footer{margin-top:13px;color:#66736a;font-size:12px;text-align:center}
+@media(max-width:800px){.grid{grid-template-columns:1fr}.stage{height:400px}header{align-items:flex-start}.badge{font-size:12px}}
 </style>
 </head>
 <body>
-<main class="card">
-<h1>TRIKI Reader</h1>
-<p>Подключи настоящий Triki — виртуальный капсюль повторяет его наклон и вращение.</p>
-<div class="controls">
-<button id="connect">Подключить Triki</button>
-<button id="led" disabled>Проверить</button>
-<label><input id="all" type="checkbox"> Accept all services</label>
-</div>
-<div id="status" class="status">Не подключено</div>
-<div class="stage">
-  <div class="scene"><div id="triki" class="triki">
-    <div class="cap rim"></div><div class="cap green"></div>
-    <div class="cap face"><div class="logo"><span>Tr</span><b>i</b><span>ki</span></div><div id="ledDot" class="ledDot"></div><div class="centerMark"></div></div>
-  </div></div>
-  <div id="info" class="info">gyro: 0 0 0 · accel: 0 0 0</div>
-</div>
-<script>
-const S='6e400001-b5a3-f393-e0a9-e50e24dcca9e',RX='6e400002-b5a3-f393-e0a9-e50e24dcca9e',TX='6e400003-b5a3-f393-e0a9-e50e24dcca9e',LED='6e400004-b5a3-f393-e0a9-e50e24dcca9e';
-const MOTION=new Uint8Array([32,16,0,52,0,52,0,3]), LED_ON=new Uint8Array([1]), LED_OFF=new Uint8Array([0]);
-let tx,rx,led,buf=new Uint8Array(),device, reconnectTimer=null, connecting=false, reconnectAttempts=0;
-let vals=[0,0,0,0,0,0],samples=0,lastT=0;
-let rot={x:0,y:0,z:0};
-const RESTING_X=70; // Triki лежит: его плоскость почти горизонтальна относительно сцены.
-let yaw=0;
-const st=t=>document.querySelector('#status').textContent=t;
-const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
+<div class="app">
+<header>
+  <div><h1>TRIKI Control</h1><p class="subtitle">Bluetooth-пульт для настоящего Triki</p></div>
+  <div class="badge"><i id="stateDot" class="dot"></i><span id="stateText">Не подключён</span></div>
+</header>
 
-function parse(d){
-  const incoming=new Uint8Array(d.byteLength); incoming.set(new Uint8Array(d.buffer,d.byteOffset,d.byteLength));
-  const joined=new Uint8Array(buf.length+incoming.length);joined.set(buf);joined.set(incoming,buf.length);buf=joined;
-  while(buf.length>=14){
+<div class="grid">
+<section class="panel main">
+  <div class="toolbar">
+    <button id="connect" class="primary">Подключить Triki</button>
+    <button id="led" class="led" disabled>💡 LED: ВЫКЛ</button>
+    <button id="disconnect" class="secondary" disabled>Отключить</button>
+    <div id="status" class="status">Нажми «Подключить Triki» и выбери устройство.</div>
+  </div>
+  <div class="stage">
+    <div class="scene"><div id="triki" class="triki">
+      <div class="rim"></div><div class="green"></div>
+      <div class="face"><div class="logo">Tr<b>i</b>ki</div><div id="ledDot" class="ledDot"></div></div>
+    </div></div>
+    <div id="info" class="info">gyro 0 0 0 · accel 0 0 0 · packets 0</div>
+  </div>
+</section>
+
+<aside class="panel side">
+  <h2>Датчики</h2>
+  <div class="sensors">
+    <div class="sensor"><span>Gyro X</span><strong id="g0">0</strong></div>
+    <div class="sensor"><span>Gyro Y</span><strong id="g1">0</strong></div>
+    <div class="sensor"><span>Gyro Z</span><strong id="g2">0</strong></div>
+    <div class="sensor"><span>Accel X</span><strong id="a0">0</strong></div>
+    <div class="sensor"><span>Accel Y</span><strong id="a1">0</strong></div>
+    <div class="sensor"><span>Accel Z</span><strong id="a2">0</strong></div>
+  </div>
+  <div class="help">
+    <b>Протокол Triki</b><br>
+    NUS-подобный BLE-сервис. Приложение автоматически запускает поток движения и принимает 14-байтные кадры с гироскопом и акселерометром.
+  </div>
+  <div class="help">
+    <b>LED</b><br>
+    Кнопка отправляет <code>01</code> для включения и <code>00</code> для выключения.
+  </div>
+</aside>
+</div>
+<footer>TRIKI Control · Web Bluetooth</footer>
+</div>
+
+<script>
+const SERVICE='6e400001-b5a3-f393-e0a9-e50e24dcca9e';
+const RX='6e400002-b5a3-f393-e0a9-e50e24dcca9e';
+const TX='6e400003-b5a3-f393-e0a9-e50e24dcca9e';
+const LED='6e400004-b5a3-f393-e0a9-e50e24dcca9e';
+const MOTION=new Uint8Array([0x20,0x10,0x00,0x34,0x00,0x34,0x00,0x03]);
+const LED_ON=new Uint8Array([0x01]), LED_OFF=new Uint8Array([0x00]);
+
+let device=null,rx=null,tx=null,ledChar=null,buffer=new Uint8Array(),packets=0;
+let ledOn=false, lastTime=0, yaw=0;
+const initialX=70;
+
+const $=id=>document.getElementById(id);
+function status(text){$('status').textContent=text}
+function setConnected(v){
+  $('stateDot').classList.toggle('on',v);
+  $('stateText').textContent=v?'Подключён':'Не подключён';
+  $('led').disabled=!v;$('disconnect').disabled=!v;
+}
+function i16(d,o){return d.getInt16(o,true)}
+
+function parse(event){
+  const x=new Uint8Array(event.target.value.buffer.slice(0));
+  const joined=new Uint8Array(buffer.length+x.length);
+  joined.set(buffer);joined.set(x,buffer.length);buffer=joined;
+  while(buffer.length>=14){
     let p=-1;
-    for(let i=0;i<buf.length-1;i++) if(buf[i]===0x22 && buf[i+1]<=0x0f){p=i;break}
-    if(p<0){buf=buf[buf.length-1]===0x22?buf.slice(-1):new Uint8Array();return}
-    if(p)buf=buf.slice(p);
-    if(buf.length<14)return;
-    const f=buf.slice(0,14);buf=buf.slice(14);
-    const dv=new DataView(f.buffer,f.byteOffset,f.byteLength);
-    vals=[];
-    for(let i=0;i<6;i++) vals.push(dv.getInt16(2+i*2,true));
-    updateMotion();
-    samples++;
+    for(let i=0;i<buffer.length-1;i++){
+      if(buffer[i]===0x22 && buffer[i+1]<=0x0f){p=i;break}
+    }
+    if(p<0){buffer=buffer[buffer.length-1]===0x22?buffer.slice(-1):new Uint8Array();return}
+    if(p)buffer=buffer.slice(p);
+    if(buffer.length<14)return;
+    const frame=buffer.slice(0,14);buffer=buffer.slice(14);
+    const d=new DataView(frame.buffer,frame.byteOffset,frame.byteLength);
+    const v=[i16(d,2),i16(d,4),i16(d,6),i16(d,8),i16(d,10),i16(d,12)];
+    packets++;
+    updateSensors(v);
   }
 }
 
-function updateMotion(){
-  const now=performance.now();
-  const dt=lastT?clamp((now-lastT)/1000,.005,.08):.019;
-  lastT=now;
-  // Gyroscope: integrate all three axes so physical rotation is visible.
-  // The scale is intentionally conservative for the small Triki sensor.
-  yaw += vals[2]*dt*0.00045;
+function updateSensors(v){
+  for(let i=0;i<3;i++) $('g'+i).textContent=v[i];
+  for(let i=0;i<3;i++) $('a'+i).textContent=v[i+3];
 
-  // Accelerometer slowly corrects pitch/roll drift when the device is tilted.
-  const ax=vals[3], ay=vals[4], az=vals[5];
+  const now=performance.now(),dt=lastTime?Math.min(.08,Math.max(.005,(now-lastTime)/1000)):.019;
+  lastTime=now;
+  yaw+=v[2]*dt*.00045;
+
+  const ax=v[3],ay=v[4],az=v[5];
   const roll=Math.atan2(ay,Math.sqrt(ax*ax+az*az))*180/Math.PI;
   const pitch=Math.atan2(-ax,Math.sqrt(ay*ay+az*az))*180/Math.PI;
-  // Абсолютный наклон берём из гравитации, поэтому положение не зависит от того,
-  // сколько времени Triki вращали: плоско = лежит, около 90° = стоит на ребре.
-  rot.x = RESTING_X - pitch;
-  rot.y = roll;
-  rot.z = yaw;
-  document.querySelector('#triki').style.transform='rotateX('+rot.x.toFixed(2)+'deg) rotateY('+rot.y.toFixed(2)+'deg) rotateZ('+rot.z.toFixed(2)+'deg)';
-  document.querySelector('#info').textContent='gyro: '+vals.slice(0,3).join(' ')+' · accel: '+vals.slice(3).join(' ')+' · packets: '+samples;
+
+  $('triki').style.transform='rotateX('+(initialX-pitch).toFixed(2)+'deg) rotateY('+roll.toFixed(2)+'deg) rotateZ('+yaw.toFixed(2)+'deg)';
+  $('info').textContent='gyro '+v.slice(0,3).join(' ')+' · accel '+v.slice(3).join(' ')+' · packets '+packets;
 }
 
 async function setLed(on){
-  if(!led)return;
-  try{await led.writeValue(on?LED_ON:LED_OFF);document.querySelector('#ledDot').classList.toggle('on',on)}catch(e){st('LED: '+e.message)}
-}
-
-async function setupConnection(){
-  if(!device||!device.gatt) throw Error('Triki не выбран');
-  if(!device.gatt.connected){
-    st('Переподключение к Triki…');
-    await device.gatt.connect();
-  }
-  const s=await device.gatt.getPrimaryService(S);
-  rx=await s.getCharacteristic(RX);
-  tx=await s.getCharacteristic(TX);
-  led=await s.getCharacteristic(LED);
-  try{await tx.startNotifications()}catch(e){}
-  tx.addEventListener('characteristicvaluechanged',e=>parse(e.target.value));
-  buf=new Uint8Array();
-  lastT=0;
-  await rx.writeValue(MOTION);
-  document.querySelector('#led').disabled=false;
-  reconnectAttempts=0;
-  st('Подключено: '+(device.name||'Triki'));
-}
-
-function scheduleReconnect(){
-  if(!device||reconnectTimer||connecting)return;
-  const delay=Math.min(1000*Math.pow(1,reconnectAttempts),5000);
-  reconnectTimer=setTimeout(async()=>{
-    reconnectTimer=null;
-    if(!device)return;
-    try{
-      connecting=true;
-      await setupConnection();
-    }catch(e){
-      reconnectAttempts++;
-      document.querySelector('#led').disabled=true;
-      st('Triki отключён — переподключение…');
-      scheduleReconnect();
-    }finally{connecting=false}
-  },delay);
+  if(!ledChar)return;
+  try{
+    await ledChar.writeValue(on?LED_ON:LED_OFF);
+    ledOn=on;
+    $('ledDot').classList.toggle('on',on);
+    $('led').textContent='💡 LED: '+(on?'ВКЛ':'ВЫКЛ');
+    $('led').classList.toggle('off',!on);
+  }catch(e){status('Ошибка LED: '+e.message)}
 }
 
 async function connect(){
+  if(!navigator.bluetooth){status('Web Bluetooth недоступен. Нужен Chrome/Edge и защищённый HTTPS-сайт.');return}
   try{
-    if(!navigator.bluetooth) throw Error('Web Bluetooth недоступен. Открой сайт через HTTPS в Chrome/Edge.');
-    if(connecting)return;
-    connecting=true;
-    st('Выбор Triki…');
-    const opts=document.querySelector('#all').checked
-      ? {acceptAllDevices:true,optionalServices:[S]}
-      : {filters:[{services:[S]}],optionalServices:[S]};
-    device=await navigator.bluetooth.requestDevice(opts);
-    device.addEventListener('gattserverdisconnected',()=>{
-      document.querySelector('#led').disabled=true;
-      if(!connecting) scheduleReconnect();
-      st('Triki отключён — переподключение…');
+    status('Выбери Triki в окне Bluetooth…');
+    device=await navigator.bluetooth.requestDevice({
+      filters:[{services:[SERVICE]}],
+      optionalServices:[SERVICE]
     });
-    await setupConnection();
+    device.addEventListener('gattserverdisconnected',()=>{
+      setConnected(false);
+      status('Triki отключён.');
+    });
+    status('Подключение…');
+    const server=await device.gatt.connect();
+    const service=await server.getPrimaryService(SERVICE);
+    rx=await service.getCharacteristic(RX);
+    tx=await service.getCharacteristic(TX);
+    ledChar=await service.getCharacteristic(LED);
+    tx.addEventListener('characteristicvaluechanged',parse);
+    await tx.startNotifications();
+    buffer=new Uint8Array();packets=0;lastTime=0;yaw=0;
+    await rx.writeValue(MOTION);
+    setConnected(true);
+    status('Готово: '+(device.name||'Triki'));
   }catch(e){
-    document.querySelector('#led').disabled=true;
-    st('Ошибка: '+e.message);
-  }finally{connecting=false}
+    setConnected(false);
+    if(e.name==='NotFoundError')status('Выбор устройства отменён.');
+    else status('Ошибка: '+e.message);
+  }
 }
 
-document.querySelector('#connect').onclick=connect;
-const b=document.querySelector('#led');
-b.onpointerdown=()=>setLed(true);
-b.onpointerup=()=>setLed(false);
-b.onpointercancel=()=>setLed(false);
-b.onpointerleave=()=>setLed(false);
-drawInitial();
-
-function drawInitial(){
-  document.querySelector('#triki').style.transform='rotateX('+RESTING_X+'deg) rotateY(0deg) rotateZ(0deg)';
+async function disconnect(){
+  try{if(device?.gatt?.connected)device.gatt.disconnect()}catch(e){}
+  setConnected(false);status('Отключено');
+  ledOn=false;$('ledDot').classList.remove('on');$('led').textContent='💡 LED: ВЫКЛ';$('led').classList.add('off');
 }
+
+$('connect').onclick=connect;
+$('disconnect').onclick=disconnect;
+$('led').onclick=()=>setLed(!ledOn);
+$('led').classList.add('off');
 </script>
-</main>
 </body>
 </html>
